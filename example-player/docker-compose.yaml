@@ -1,0 +1,9 @@
+version: "3.4"
+services:
+    player:
+        build:
+            context: .
+        container_name: player
+        image: gcr.io/[PROJECT-ID]/[PLAYER-NAME]
+        ports:
+        - 5000:5000
