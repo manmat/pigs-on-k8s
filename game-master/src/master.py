@@ -1,5 +1,8 @@
+import itertools
 import logging
+import requests
 import sys
+from kubernetes import client, config
 
 
 class Player():
@@ -89,8 +92,29 @@ class Game():
                         self.logger.info(current_rolls)
                         current_rolls = []
             self.match_results.append(self.current_results)
-        for res in self.match_results:
-            print(res)
+        return self.match_results
+
+
+class GameMaster():
+    def __init__(self):
+        self.players = []
+        self.services = []
+        config.load_incluster_config()
+        self.v1 = client.CoreV1Api()
+        self.scores = {}
+
+    def refresh_players(self):
+        v1_service_list = self.v1.list_namespaced_service('players')
+        discovered_services = v1_service_list.items
+        self.services = [(x.spec.external_name, x.spec.cluster_ip) for x in discovered_services]
+        self.players = [(x[0], APIPlayer(x[1])) for x in self.services]
+
+    def run_tournament(self):
+        self.refresh_players()
+        self.scrores = {}
+        for (p1, p2) in intertools.combinations(self.players, 2):
+            game = Game(p1[1], p2[1])
+            game.play(1)
 
 
 good_player = AlwaysStop()
